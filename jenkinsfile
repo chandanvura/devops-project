@@ -32,18 +32,17 @@ pipeline {
             }
         }
 
-        stage('Deploy to Kubernetes') {
+        stage('Deploy via Helm') {
             steps {
-                echo 'Deploying to Kubernetes...'
-                bat 'kubectl set image deployment/devops-project devops-project=%IMAGE_NAME%:%IMAGE_TAG% --kubeconfig=%KUBECONFIG%'
-                bat 'kubectl rollout status deployment/devops-project --kubeconfig=%KUBECONFIG%'
+                echo 'Deploying via Helm...'
+                bat 'helm upgrade --install devops-app helm-chart/ --set image.tag=%IMAGE_TAG% --kubeconfig=%KUBECONFIG%'
             }
         }
     }
 
     post {
         success {
-            echo 'Pipeline completed! App deployed to Kubernetes!'
+            echo 'Pipeline complete! App deployed via Helm!'
         }
         failure {
             echo 'Pipeline failed!'
