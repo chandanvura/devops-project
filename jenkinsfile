@@ -22,6 +22,13 @@ pipeline {
             }
         }
 
+        stage('Trivy Image Scan') {
+            steps {
+                echo 'Scanning image for vulnerabilities...'
+                bat 'trivy image --exit-code 0 --severity LOW,MEDIUM,HIGH,CRITICAL --format table %IMAGE_NAME%:%IMAGE_TAG%'
+            }
+        }
+
         stage('Push to DockerHub') {
             steps {
                 echo 'Pushing to DockerHub...'
@@ -41,11 +48,15 @@ pipeline {
     }
 
     post {
+        always {
+            echo 'Saving Trivy scan results...'
+            bat 'trivy image --exit-code 0 --severity HIGH,CRITICAL --format json --output trivy-report.json %IMAGE_NAME%:%IMAGE_TAG% || exit 0'
+        }
         success {
-            echo 'Pipeline complete! App deployed via Helm!'
+            echo 'Pipeline complete! Image scanned and deployed!'
         }
         failure {
-            echo 'Pipeline failed!'
+            echo 'Pipeline failed! Check Trivy scan results.'
         }
     }
 }
