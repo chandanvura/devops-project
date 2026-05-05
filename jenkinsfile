@@ -3,7 +3,8 @@ pipeline {
 
     environment {
         IMAGE_NAME = 'chandanvura/devops-project'
-        IMAGE_TAG = 'v1'
+        IMAGE_TAG = "v${BUILD_NUMBER}"
+        KUBECONFIG = 'C:\\ProgramData\\Jenkins\\.jenkins\\.kube\\config'
     }
 
     stages {
@@ -30,11 +31,19 @@ pipeline {
                 }
             }
         }
+
+        stage('Deploy to Kubernetes') {
+            steps {
+                echo 'Deploying to Kubernetes...'
+                bat 'kubectl set image deployment/devops-project devops-project=%IMAGE_NAME%:%IMAGE_TAG% --kubeconfig=%KUBECONFIG%'
+                bat 'kubectl rollout status deployment/devops-project --kubeconfig=%KUBECONFIG%'
+            }
+        }
     }
 
     post {
         success {
-            echo 'Pipeline completed successfully!'
+            echo 'Pipeline completed! App deployed to Kubernetes!'
         }
         failure {
             echo 'Pipeline failed!'
