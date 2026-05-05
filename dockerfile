@@ -1,5 +1,5 @@
-# Base image — Node.js 18 lightweight version
-FROM node:18-alpine
+# Base image — Node.js 20 lightweight version
+FROM node:20-alpine
 
 # Set working directory inside container
 WORKDIR /app
