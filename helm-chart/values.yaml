@@ -1,0 +1,23 @@
+replicaCount: 3
+
+image:
+  repository: chandanvura/devops-project
+  tag: "v6"
+  pullPolicy: Always
+
+service:
+  type: NodePort
+  port: 80
+  targetPort: 3000
+  nodePort: 30085
+
+resources:
+  requests:
+    memory: "64Mi"
+    cpu: "250m"
+  limits:
+    memory: "128Mi"
+    cpu: "500m"
+
+app:
+  name: devops-project-helm
