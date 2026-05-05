@@ -18,7 +18,7 @@ pipeline {
         stage('OWASP Dependency Check') {
             steps {
                 echo 'Scanning dependencies for vulnerabilities...'
-                dependencyCheck additionalArguments: '--scan ./ --format HTML --format JSON --out dependency-check-report', odcInstallation: 'DP-Check'
+                dependencyCheck additionalArguments: '--scan ./ --format XML --out dependency-check-report', odcInstallation: 'DP-Check'
             }
         }
 
@@ -56,15 +56,14 @@ pipeline {
 
     post {
         always {
-            echo 'Publishing security reports...'
-            dependencyCheckPublisher pattern: 'dependency-check-report/dependency-check-report.xml'
+            echo 'Saving Trivy scan results...'
             bat 'C:\\Windows\\System32\\trivy.exe image --exit-code 0 --severity HIGH,CRITICAL --format json --output trivy-report.json %IMAGE_NAME%:%IMAGE_TAG% || exit 0'
         }
         success {
             echo 'Pipeline complete! App scanned and deployed!'
         }
         failure {
-            echo 'Pipeline failed! Check security reports.'
+            echo 'Pipeline failed!'
         }
     }
 }
