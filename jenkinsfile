@@ -15,6 +15,13 @@ pipeline {
             }
         }
 
+        stage('OWASP Dependency Check') {
+            steps {
+                echo 'Scanning dependencies for vulnerabilities...'
+                dependencyCheck additionalArguments: '--scan ./ --format HTML --format JSON --out dependency-check-report', odcInstallation: 'DP-Check'
+            }
+        }
+
         stage('Build Docker Image') {
             steps {
                 echo 'Building Docker image...'
@@ -25,7 +32,7 @@ pipeline {
         stage('Trivy Image Scan') {
             steps {
                 echo 'Scanning image for vulnerabilities...'
-                bat 'trivy image --exit-code 0 --severity LOW,MEDIUM,HIGH,CRITICAL --format table %IMAGE_NAME%:%IMAGE_TAG%'
+                bat 'C:\\Windows\\System32\\trivy.exe image --exit-code 0 --severity LOW,MEDIUM,HIGH,CRITICAL --format table %IMAGE_NAME%:%IMAGE_TAG%'
             }
         }
 
@@ -49,14 +56,15 @@ pipeline {
 
     post {
         always {
-            echo 'Saving Trivy scan results...'
-            bat 'trivy image --exit-code 0 --severity HIGH,CRITICAL --format json --output trivy-report.json %IMAGE_NAME%:%IMAGE_TAG% || exit 0'
+            echo 'Publishing security reports...'
+            dependencyCheckPublisher pattern: 'dependency-check-report/dependency-check-report.xml'
+            bat 'C:\\Windows\\System32\\trivy.exe image --exit-code 0 --severity HIGH,CRITICAL --format json --output trivy-report.json %IMAGE_NAME%:%IMAGE_TAG% || exit 0'
         }
         success {
-            echo 'Pipeline complete! Image scanned and deployed!'
+            echo 'Pipeline complete! App scanned and deployed!'
         }
         failure {
-            echo 'Pipeline failed! Check Trivy scan results.'
+            echo 'Pipeline failed! Check security reports.'
         }
     }
 }
